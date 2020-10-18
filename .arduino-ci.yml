@@ -14,6 +14,11 @@ unittest:
   platforms:
     - mega2560
 
+  testfiles:
+    reject:
+      - "PID_v1.cpp"
+
+
 compile:
   platforms:
     - mega2560
