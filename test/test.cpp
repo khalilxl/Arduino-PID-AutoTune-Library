@@ -75,22 +75,6 @@ void loop() {
   }
 }
 
-void changeAutoTune() {
-  if (!tuning) {
-    // Set the output to the desired starting frequency.
-    output = aTuneStartValue;
-    aTune.SetNoiseBand(aTuneNoise);
-    aTune.SetOutputStep(aTuneStep);
-    aTune.SetLookbackSec((int)aTuneLookBack);
-    AutoTuneHelper(true);
-    tuning = true;
-  } else { // cancel autotune
-    aTune.Cancel();
-    tuning = false;
-    AutoTuneHelper(false);
-  }
-}
-
 void AutoTuneHelper(boolean start) {
   if (start)
     ATuneModeRemember = myPID.GetMode();
@@ -99,29 +83,17 @@ void AutoTuneHelper(boolean start) {
 }
 
 void report() {
-  // Replace with couts statements?
-  std::cout << "setpoint: " << setpoint << std::endl;
-  //   Serial.print("setpoint: ");
-  //   Serial.print(setpoint);
-  //   Serial.print(" ");
-  //   Serial.print("input: ");
-  //   Serial.print(input);
-  //   Serial.print(" ");
-  //   Serial.print("output: ");
-  //   Serial.print(output);
-  //   Serial.print(" ");
-  //   if (tuning) {
-  //     Serial.println("tuning mode");
-  //   } else {
-  //     Serial.print("kp: ");
-  //     Serial.print(myPID.GetKp());
-  //     Serial.print(" ");
-  //     Serial.print("ki: ");
-  //     Serial.print(myPID.GetKi());
-  //     Serial.print(" ");
-  //     Serial.print("kd: ");
-  //     Serial.print(myPID.GetKd());
-  //     Serial.println();
+  std::cout << "setpoint: " << setpoint;
+  std::cout << "; input: " << input;
+  std::cout << "; output: " << output;
+  if (tuning) {
+    std::cout << "; tuning mode";
+  } else {
+    std::cout << "; kp: " << myPID.GetKp();
+    std::cout << "; ki: " << myPID.GetKi();
+    std::cout << "; kd: " << myPID.GetKd();
+  }
+  std::cout << std::endl;
 }
 
 void DoModel() {
@@ -135,12 +107,37 @@ void DoModel() {
 }
 
 unittest(test) {
-  assertTrue(true);
+
+  // Set Mode Manual
+  myPID.SetMode(MANUAL);
+  assertEqual(MANUAL, myPID.GetMode());
   setup();
-  for (byte i = 1; i < 100; i++) {
+
+  // After setup() the Mode should be set to Automatic
+  assertEqual(AUTOMATIC, myPID.GetMode());
+
+  // Check Kp, Ki, Kd
+  assertEqual(2.0, myPID.GetKp());
+  assertEqual(0.5, myPID.GetKi());
+  assertEqual(2.0, myPID.GetKd());
+
+  // // Set Kp, Ki, Kd and check valuesS
+  myPID.SetTunings(kp = 1.5, ki = 0.8, kd = 1.5);
+  assertEqual(1.5, myPID.GetKp());
+  assertEqual(0.8, myPID.GetKi());
+  assertEqual(1.5, myPID.GetKd());
+
+  assertEqual(DIRECT, myPID.GetDirection());
+
+  // change tuning value in loops.
+  // This never seems to end
+  for (int i = 1; i < 1000; i++) {
     delay(100);
     loop();
-    report();
+    if ((i % 5) == 0) {
+      // std::cout<< i << ": ";
+      // report();
+    }
   }
 }
 
